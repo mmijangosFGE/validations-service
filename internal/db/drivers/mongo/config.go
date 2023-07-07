@@ -58,6 +58,9 @@ func (c *Connection) EnsureConnection(url string) {
 			context.Background(),
 			options.Client().ApplyURI(url),
 		)
+		if errConnect != nil {
+			log.Printf(messages.ConnectToMongoDBFailed, errConnect)
+		}
 		errPing := pingMongoDB(client)
 
 		if errConnect != nil || errPing != nil {

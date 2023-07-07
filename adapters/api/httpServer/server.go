@@ -2,13 +2,17 @@ package httpServer
 
 import (
 	"errors"
+	"log"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/mmijangosFGE/validations-service/adapters/api/routes"
 	"github.com/mmijangosFGE/validations-service/pkg/constants"
 	"github.com/mmijangosFGE/validations-service/pkg/messages"
+	"github.com/mmijangosFGE/validations-service/pkg/responses"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 )
 
 // Config - struct of server configs
@@ -66,8 +70,8 @@ func NewServer(
 
 // Start - start server with config
 func (b *Broker) Start(
-	_ *mongo.Client,
-	_ Server,
+	mc *mongo.Client,
+	s Server,
 ) {
 	// Create fiber app
 	app := fiber.New()
@@ -79,7 +83,26 @@ func (b *Broker) Start(
 		cors.New(),
 	)
 	// Configure basic authMock middleware
+	bAuth := basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			b.config.Username: b.config.Password,
+		},
+		// Custom unauthorized handler
+		Unauthorized: func(c *fiber.Ctx) error {
+			response, ctx := responses.GeneralResponse(
+				c,
+				fiber.StatusUnauthorized,
+				false,
+				messages.Unauthorized,
+			)
+			return ctx.JSON(response)
+		},
+	})
 	// Init routes
+	routes.BindRoutes(
+		app,
+		&bAuth,
+	)
 	// Validate env to serve https on local
 	var errServe error
 	if b.config.Env == constants.EnvLocal {

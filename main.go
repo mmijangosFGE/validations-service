@@ -1,15 +1,16 @@
 package main
 
 import (
+	"log"
+	"os"
+	"time"
+
 	"github.com/joho/godotenv"
 	"github.com/mmijangosFGE/validations-service/adapters/api/httpServer"
 	mongoDriver "github.com/mmijangosFGE/validations-service/internal/db/drivers/mongo"
 	"github.com/mmijangosFGE/validations-service/pkg/constants"
 	"github.com/mmijangosFGE/validations-service/pkg/messages"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
-	"os"
-	"time"
 )
 
 func main() {
