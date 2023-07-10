@@ -14,8 +14,8 @@ type BiometryHandler interface {
 // between the handlers and the service
 type BiometryService interface {
 	CompareFaces(
+		SimilarityThreshold float64,
 		SourceImage string,
 		TargetImage string,
-		SimilarityThreshold float64,
 	) (bool, int, error)
 }

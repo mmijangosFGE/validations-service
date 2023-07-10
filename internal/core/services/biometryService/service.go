@@ -22,14 +22,14 @@ func NewService() *BiometryService {
 
 // CompareFaces - method to compare faces
 func (s *BiometryService) CompareFaces(
+	similarityThreshold float64,
 	sourceImage string,
 	targetImage string,
-	similarityThreshold float64,
 ) (bool, int, error) {
 	// Create a new session in the us-east-1 region.
-	session, err := session.NewSessionWithOptions(session.Options{
+	session, errSession := session.NewSessionWithOptions(session.Options{
 		Config: aws.Config{
-			Region: aws.String("us-east-1"),
+			Region: aws.String(os.Getenv("AWS_REGION")),
 			Credentials: credentials.NewStaticCredentials(
 				os.Getenv("AWS_ACCESS_KEY_ID"),
 				os.Getenv("AWS_SECRET_ACCESS_KEY"),
@@ -37,23 +37,24 @@ func (s *BiometryService) CompareFaces(
 			),
 		},
 	})
-	if err != nil {
-		return false, fiber.StatusInternalServerError, err
+	if errSession != nil {
+		return false, fiber.StatusInternalServerError, errSession
 	}
 	// Create a service client.
 	svc := rekognition.New(session)
 	// validate if the pictures are valid urls
 	if !functions.IsValidURL(sourceImage) || !functions.IsValidURL(targetImage) {
-		return false, fiber.StatusInternalServerError, errors.New(messages.InvalidURL)
+		return false,
+			fiber.StatusInternalServerError, errors.New(messages.InvalidURL)
 	}
 	// Parse the images to byte arrays
-	sourceImageBytes, err := functions.GetImageBytesFromURL(sourceImage)
-	if err != nil {
-		return false, fiber.StatusInternalServerError, err
+	sourceImageBytes, errSourceImage := functions.GetImageBytesFromURL(sourceImage)
+	if errSourceImage != nil {
+		return false, fiber.StatusInternalServerError, errSession
 	}
-	targetImageBytes, err := functions.GetImageBytesFromURL(targetImage)
-	if err != nil {
-		return false, fiber.StatusInternalServerError, err
+	targetImageBytes, errTargetImage := functions.GetImageBytesFromURL(targetImage)
+	if errTargetImage != nil {
+		return false, fiber.StatusInternalServerError, errSession
 	}
 	// Create the input for the request
 	input := &rekognition.CompareFacesInput{
@@ -66,9 +67,9 @@ func (s *BiometryService) CompareFaces(
 		},
 	}
 	// Call operation
-	result, err := svc.CompareFaces(input)
-	if err != nil {
-		return false, fiber.StatusInternalServerError, err
+	result, errCompare := svc.CompareFaces(input)
+	if errCompare != nil {
+		return false, fiber.StatusInternalServerError, errSession
 	}
 	// Validate if the faces are similar
 	if len(result.FaceMatches) > 0 {

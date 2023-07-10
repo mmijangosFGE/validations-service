@@ -29,7 +29,7 @@ func NewHandler(biometryService ports.BiometryService) *BiometryHandler {
 func (bh *BiometryHandler) CompareFaces(c *fiber.Ctx) error {
 	// Get the request body params
 	payload := new(requests.CompareFacesRequest)
-	if err := c.BodyParser(payload); err != nil {
+	if errParser := c.BodyParser(payload); errParser != nil {
 		response, ctx := responses.GeneralResponse(
 			c,
 			fiber.StatusBadRequest,
@@ -39,9 +39,9 @@ func (bh *BiometryHandler) CompareFaces(c *fiber.Ctx) error {
 		return ctx.JSON(response)
 	}
 	// Payload to variables
+	similarityThreshold := payload.SimilarityThreshold
 	sourceImage := payload.SourceImage
 	targetImage := payload.TargetImage
-	similarityThreshold := payload.SimilarityThreshold
 	// Validate if the pictures are not empty
 	// and if the similarity threshold is between 0 and 1
 	if strings.TrimSpace(sourceImage) == "" ||
@@ -56,13 +56,13 @@ func (bh *BiometryHandler) CompareFaces(c *fiber.Ctx) error {
 		return ctx.JSON(response)
 	}
 	// Call the service
-	matched, status, err := bh.biometryService.CompareFaces(
+	matched, status, errService := bh.biometryService.CompareFaces(
+		similarityThreshold,
 		sourceImage,
 		targetImage,
-		similarityThreshold,
 	)
-	if err != nil {
-		message := functions.GetServiceErrorMessage(status, err.Error())
+	if errService != nil {
+		message := functions.GetServiceErrorMessage(status, errService.Error())
 		response, ctx := responses.GeneralResponse(
 			c,
 			status,

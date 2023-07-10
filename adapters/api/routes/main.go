@@ -12,7 +12,8 @@ func BindRoutes(
 ) {
 	// Set the home route
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
+		// Return a simple 200 and ok message
+		return c.SendString("Ok")
 	})
 	// Init the biometry routes
 	biometryRoutes.InitRoutes(app, *basicAuth)
