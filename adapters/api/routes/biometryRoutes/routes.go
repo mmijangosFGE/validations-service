@@ -16,10 +16,10 @@ func InitRoutes(
 	// Instance of biometry service
 	biometrySrv := biometryService.NewService()
 	// Instance of biometry handler
-	biometryHdlr := biometryHandler.NewHandler(biometrySrv)
+	biometryHdl := biometryHandler.NewHandler(biometrySrv)
 	// Create a route to compare faces
 	biometryRoutes := v1.Group("/biometry")
 	// Create the routes
-	biometryRoutes.Post("/compare-faces", biometryHdlr.CompareFaces)
+	biometryRoutes.Post("/compare-faces", biometryHdl.CompareFaces)
 
 }

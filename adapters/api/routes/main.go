@@ -13,7 +13,7 @@ func BindRoutes(
 	// Set the home route
 	app.Get("/", func(c *fiber.Ctx) error {
 		// Return a simple 200 and ok message
-		return c.SendString("Ok")
+		return c.SendStatus(fiber.StatusOK)
 	})
 	// Init the biometry routes
 	biometryRoutes.InitRoutes(app, *basicAuth)
